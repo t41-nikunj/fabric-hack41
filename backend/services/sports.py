@@ -55,3 +55,12 @@ def get_turfs_for_sport(sport_id: int) -> tuple[str, list[Turf]] | None:
         return None
     turfs = _TURFS_BY_SPORT.get(sport_id, [])
     return sport["name"], turfs
+
+def get_message_info(message: str):
+    """It will return string either yes/no"""
+
+    if message == "CONFIRM" or message == "confirm":
+        return "Yes"
+        
+    else:
+        return "No"

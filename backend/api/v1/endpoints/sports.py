@@ -1,9 +1,15 @@
 from fastapi import APIRouter, HTTPException
 
 from backend.schemas.sports import SportListResponse, TurfListResponse
-from backend.services.sports import get_all_sports, get_turfs_for_sport
+from backend.services.sports import get_all_sports, get_turfs_for_sport, get_message_info
 
 router = APIRouter()
+
+@router.get("/confirm")
+async def confirm(
+    message: str
+):
+    return get_message_info(message=message)
 
 
 @router.get("", response_model=SportListResponse)
