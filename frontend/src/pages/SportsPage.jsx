@@ -19,17 +19,17 @@ export default function SportsPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Book a Sport</h1>
-      <div className="grid gap-4">
+      <h1 className="text-3xl font-bold mb-8 text-white">Book a Sport</h1>
+      <div className="grid gap-5">
         {sports.map((sport) => (
           <Link
             key={sport.id}
             to={`/sports/${sport.id}/turfs`}
-            className="flex items-center justify-between p-4 rounded-lg bg-gray-800 hover:bg-gray-700 transition"
+            className="flex items-center justify-between p-5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 transition-all border border-slate-700/50"
           >
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">{sport.icon}</span>
-              <span className="text-lg font-medium">{sport.name}</span>
+            <div className="flex items-center gap-4">
+              <span className="text-3xl">{sport.icon}</span>
+              <span className="text-xl font-semibold text-white">{sport.name}</span>
             </div>
             <span className="text-sm text-gray-400">
               {sport.available_turfs_count} turf{sport.available_turfs_count !== 1 ? "s" : ""} available
