@@ -1,11 +1,16 @@
-import React from 'react'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import SportsPage from "./pages/SportsPage";
+import TurfsPage from "./pages/TurfsPage";
 
-const App = () => {
+export default function App() {
   return (
-    <>
-      <h1 className='text-5xl text-center text-red-400'>Hack41</h1>
-    </>
-  )
+    <BrowserRouter>
+      <div className="min-h-screen bg-gray-900 text-white">
+        <Routes>
+          <Route path="/" element={<SportsPage />} />
+          <Route path="/sports/:sportId/turfs" element={<TurfsPage />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
+  );
 }
-
-export default App

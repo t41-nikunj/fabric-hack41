@@ -1,9 +1,7 @@
 ---
 name: playwright-design-qa
 version: 1.0.0
-description: >
-  Validate that a frontend UI implementation matches a Figma prototype by
-  comparing visual output, layout alignment, and design tokens using Playwright.
+description: Validate that a frontend UI implementation matches a Figma prototype by comparing visual output, layout alignment, and design tokens using Playwright.
 role: Design QA Agent
 inputs:
   - figma_prototype_image
