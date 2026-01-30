@@ -29,13 +29,6 @@ function getVenueRating(name) {
   return VENUE_RATINGS[name];
 }
 
-function extractCity(location) {
-  for (const city of CITIES) {
-    if (location.includes(city)) return city;
-  }
-  return null;
-}
-
 export default function TurfsPage() {
   const { sportId } = useParams();
   const [data, setData] = useState(null);
