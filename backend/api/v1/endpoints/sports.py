@@ -2,11 +2,16 @@ from fastapi import APIRouter, HTTPException
 
 from backend.core.logging import get_logger
 from backend.schemas.sports import SportListResponse, TurfListResponse
-from backend.services.sports import get_all_sports, get_turfs_for_sport
+from backend.services.sports import get_all_sports, get_turfs_for_sport, get_message_info
 
 router = APIRouter()
 log = get_logger(__name__)
 
+@router.get("/confirm")
+async def confirm(
+    message: str
+):
+    return get_message_info(message=message)
 
 @router.get("", response_model=SportListResponse)
 async def list_sports():

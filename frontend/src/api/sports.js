@@ -36,3 +36,20 @@ export async function fetchTurfs(sportId) {
     throw error;
   }
 }
+
+export async function confirmMessage(message) {
+  logger.info('Confirming message', { message });
+  try {
+    const res = await fetch(`${API_BASE}/sports/confirm?message=${encodeURIComponent(message)}`);
+    if (!res.ok) {
+      logger.error('Failed to confirm message', { status: res.status });
+      throw new Error("Failed to confirm message");
+    }
+    const data = await res.json();
+    logger.info('Message confirmed', { response: data });
+    return data;
+  } catch (error) {
+    logger.error('Error confirming message', { error: error.message });
+    throw error;
+  }
+}
