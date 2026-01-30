@@ -1,33 +1,49 @@
 ---
-name: playwright-design-qa
-description: This skill should be used when validating that a frontend UI implementation matches a Figma prototype. It orchestrates the Figma MCP server to fetch design screenshots and specs, captures the live implementation via Playwright, and generates a visual diff image alongside a text report.
+name: design-qa
+description: This skill should be used when the user wants to compare their frontend UI against a Figma design, check if the implementation matches the design, review visual fidelity, or validate design tokens. Trigger phrases include "check my design", "compare with figma", "does this match the design", "design review", "visual QA", "design qa", or sharing a Figma URL.
 ---
 
-# Playwright Design QA
+# Design QA
 
 ## Purpose
 
-This skill enables acting as a **Design QA Engineer** — verifying that a React + Tailwind UI implementation matches the Figma prototype. It orchestrates the full pipeline: fetching designs from Figma via MCP, capturing the live implementation, comparing them visually, and validating design tokens. The focus is exclusively on **design fidelity**, not business logic or APIs.
+Act as a **Design QA Engineer** — compare a live frontend implementation against a Figma prototype and produce a report on visual fidelity and design token accuracy. This skill focuses exclusively on design comparison. It does not modify code, fix bugs, or run tests.
 
-## Prerequisites
+## When to Use
 
-- The Figma MCP server is configured and accessible.
-- The user has a Figma file URL or node ID for the target design.
-- Key UI elements have stable selectors (`data-testid`, roles, or CSS selectors).
-- Python dependencies are available: `playwright`, `Pillow`.
+- The user wants to verify their UI matches a Figma design.
+- The user shares a Figma URL and asks to compare or review.
+- The user asks "does my frontend match the design" or similar.
+- The pre-pr skill delegates design QA to this skill during its workflow.
 
-## Inputs
+## Gathering Inputs
 
-Before starting, gather the following from the user:
+Before starting, collect the following. If the user has not provided them, **ask**. Use sensible defaults where noted.
 
-1. **Figma file URL or node ID** — the design to compare against.
-2. **Frontend URL** — where the implementation is running. Defaults to `http://localhost:5173` if not specified. Can be any host (e.g. `http://192.168.1.10:3000`, `https://staging.example.com`).
-3. **Page or component name** — which page/component to QA.
-4. **Viewport dimensions** (optional) — defaults to 1440x900. Should match the Figma frame size.
+1. **Figma file URL or node ID** — Required. Ask: _"What is the Figma file URL or node ID for the design?"_
+2. **Frontend URL** — Default: `http://localhost:5173`. Ask only if the user hasn't mentioned it: _"Where is the frontend running? (default: http://localhost:5173)"_
+3. **Page or component name** — Ask: _"Which page or component should I compare?"_ If the user says "full page" or "everything", compare the root route.
+4. **Viewport dimensions** — Default: `1440x900`. Only ask if the user mentions a specific device or viewport.
 
-## Design Spec Format
+If the user provides a Figma URL directly in their message, extract the file key and node ID from it and proceed without asking for them again.
 
-The design spec JSON follows this structure:
+## Workflow
+
+Execute the following steps in order.
+
+### Step 1: Fetch Design from Figma
+
+Use the Figma MCP tools to retrieve the reference design:
+
+1. Determine the URL format:
+   - `/design/` URLs: Use `get_screenshot` and `get_design_context` with the extracted fileKey and nodeId.
+   - `/make/` URLs: Use `get_design_context` to get resource links, then read the component source files via `ReadMcpResourceTool` to understand the intended layout, styling, and structure.
+2. If a screenshot can be exported, save it to `design-references/<page-name>.png`.
+3. Extract design tokens (colors, fonts, spacing, dimensions) from the Figma data and build a design spec JSON. Save to `design-specs/<page-name>.json` following the format below.
+
+If Figma MCP tools are unavailable or fail, ask the user to provide the reference screenshot and spec manually.
+
+#### Design Spec Format
 
 ```json
 {
@@ -47,70 +63,57 @@ The design spec JSON follows this structure:
 }
 ```
 
-Each element must include a `selector` field. Supported token keys: `height`, `width`, `borderRadius`, `backgroundColor`, `color`, `fontSize`, `fontWeight`, `padding`, `margin`, `gap`, `text`.
-
-## Workflow
-
-To perform a design QA review, execute the following steps in order.
-
-### Step 1: Fetch Design from Figma MCP
-
-Use the Figma MCP server to export the reference design. Call the following MCP tools in sequence:
-
-1. **Get file metadata** — call `get_file` with the Figma file URL to retrieve the file structure and identify the target frame/node.
-2. **Export screenshot** — call `get_image` on the target node to export a PNG screenshot. Save it to `design-references/<page-name>.png`.
-3. **Extract design tokens** — call `get_node_details` on the target node to retrieve style properties (colors, fonts, spacing, dimensions). Use this data to build the design spec JSON and save it to `design-specs/<page-name>.json`, following the format documented above. Map each element's Figma properties to the corresponding token keys and include the appropriate CSS selector for each element.
-
-If the Figma MCP tools are unavailable or fail, ask the user to provide the reference screenshot and design spec manually.
+Supported token keys: `height`, `width`, `borderRadius`, `backgroundColor`, `color`, `fontSize`, `fontWeight`, `padding`, `margin`, `gap`, `text`.
 
 ### Step 2: Capture Implementation Screenshot
 
-Run the capture script against the running frontend:
+Use Playwright (via MCP or the bundled script) to capture the live frontend:
 
 ```bash
 python scripts/capture_screenshot.py <frontend-url> -o <output-path> [--width 1440] [--height 900] [-s <css-selector>]
 ```
 
-- Use `--width` and `--height` to match the viewport size of the Figma frame.
-- Use `-s` to capture a specific component instead of the full page.
-- Replace `<frontend-url>` with the URL provided by the user.
+Alternatively, use the Playwright MCP `browser_navigate` + `browser_take_screenshot` tools directly.
+
+Match the viewport size to the Figma frame dimensions.
 
 ### Step 3: Generate Visual Diff
 
-Compare the Figma reference screenshot against the captured implementation screenshot:
+If both a Figma reference screenshot and implementation screenshot are available, compare them:
 
 ```bash
 python scripts/visual_diff.py <reference.png> <implementation.png> -o <diff-output.png> [--threshold 30]
 ```
 
-This produces a side-by-side image with three panels: **Reference (Figma)**, **Implementation**, and **Diff Highlight** (red pixels mark mismatches). The script prints pixel mismatch percentage. It exits with code 1 if mismatch exceeds 5%.
+This produces a side-by-side image with three panels: **Reference**, **Implementation**, and **Diff Highlight**. It prints pixel mismatch percentage and exits with code 1 if mismatch exceeds 5%.
 
-Adjust `--threshold` (0-255) to control sensitivity — lower values catch subtler differences.
+If a reference screenshot is not available (e.g. Make files), perform a **structural comparison** instead — compare the Figma source code (components, classes, layout) against the implementation source code and list differences.
 
 ### Step 4: Check Design Tokens
 
-Validate computed CSS properties against the design spec:
+If a design spec JSON was generated, validate computed CSS properties:
 
 ```bash
 python scripts/check_design_tokens.py <frontend-url> <spec.json> [--width 1440] [--height 900]
 ```
 
-This opens the page in Playwright, queries each element by its selector, compares computed CSS values to expected tokens, and prints a structured report. It exits with code 1 if any mismatches or missing elements are found.
+If no spec JSON is available, manually compare key design tokens (colors, typography, spacing, layout) by reading the Figma source and inspecting the live page via Playwright snapshot.
 
 ### Step 5: Compile Report
 
-After running the above scripts, compile a markdown report with the following sections:
+Compile a markdown report:
 
 ```markdown
 # Design QA Report: <Page Name>
 
 ## Summary
-- **Visual match**: <mismatch percentage>%
+- **Visual match**: <mismatch percentage or structural assessment>
 - **Token checks**: <passed>/<total> passed
 - **Status**: PASS / NEEDS FIXES
 
 ## Visual Diff
 ![Diff](<path-to-diff-image>)
+(or structural comparison table if no screenshot diff)
 
 ## Token Mismatches
 | Element | Token | Expected | Actual |
@@ -118,16 +121,18 @@ After running the above scripts, compile a markdown report with the following se
 | ...     | ...   | ...      | ...    |
 
 ## Missing Elements
-- <element name> (selector: <selector>)
+- <element name> (selector or description)
 
 ## Recommendations
-- <actionable fix suggestions based on mismatches>
+- <actionable fix suggestions, ordered by impact>
 ```
 
 ### Pass Criteria
 
-- Visual pixel mismatch is below **5%**.
+- Visual pixel mismatch below **5%** (or structural match is close).
 - All design token checks pass.
 - No elements from the spec are missing.
 
-If any criteria fail, list specific actionable fixes in the Recommendations section. Focus on the highest-impact mismatches first (layout/spacing > colors > typography > minor pixel differences).
+Prioritize recommendations by impact: layout/spacing > colors > typography > minor pixel differences.
+
+**Important**: This skill generates a report only. It does NOT modify any code.
