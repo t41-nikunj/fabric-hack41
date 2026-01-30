@@ -3,9 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.v1.router import api_router
 from backend.core.config import settings
+from backend.core.logging import setup_logging
 
 
 def create_app() -> FastAPI:
+    setup_logging()
     app = FastAPI(
         title=settings.PROJECT_NAME,
         version=settings.VERSION,

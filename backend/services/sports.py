@@ -1,4 +1,7 @@
+from backend.core.logging import get_logger
 from backend.schemas.sports import Sport, Turf
+
+log = get_logger(__name__)
 
 # --- Mock Data ---
 
@@ -38,7 +41,8 @@ _TURFS_BY_SPORT: dict[int, list[Turf]] = {
 
 
 def get_all_sports() -> list[Sport]:
-    return [
+    log.info("Retrieving all sports from mock data.")
+    sports = [
         Sport(
             id=s["id"],
             name=s["name"],
@@ -47,11 +51,16 @@ def get_all_sports() -> list[Sport]:
         )
         for s in _SPORTS_DATA
     ]
+    log.info(f"Retrieved {len(sports)} sports.")
+    return sports
 
 
 def get_turfs_for_sport(sport_id: int) -> tuple[str, list[Turf]] | None:
+    log.info(f"Retrieving turfs for sport_id: {sport_id}.")
     sport = next((s for s in _SPORTS_DATA if s["id"] == sport_id), None)
     if sport is None:
+        log.warning(f"Sport with id {sport_id} not found in mock data.")
         return None
     turfs = _TURFS_BY_SPORT.get(sport_id, [])
+    log.info(f"Found {len(turfs)} turfs for sport '{sport['name']}'.")
     return sport["name"], turfs
