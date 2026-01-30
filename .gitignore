@@ -1,8 +1,140 @@
+# ===========================
+# Environment & Secrets
+# ===========================
 .env
+.env.local
+.env.*.local
+.env.development
+.env.production
+*.pem
+secrets/
+
+# ===========================
+# Python
+# ===========================
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+eggs/
+*.egg-info/
+*.egg
 .venv/
+venv/
+ENV/
+.python-version
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Python testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Python type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+# ===========================
+# Node.js / Frontend
+# ===========================
 node_modules/
 dist/
-.gitignore
-__pycache__
+dist-ssr/
+*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Package manager files
+.pnpm-store/
+.yarn/
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# ===========================
+# Build & Compiled Output
+# ===========================
+*.min.js
+*.min.css
+*.bundle.js
+.cache/
+.parcel-cache/
+.turbo/
+
+# ===========================
+# IDEs & Editors
+# ===========================
+.idea/
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*.swn
+*~
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# JetBrains
+*.iml
+.idea/
+
+# ===========================
+# Operating System
+# ===========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ===========================
+# Testing & Coverage
+# ===========================
+coverage/
+*.lcov
+.nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ===========================
+# Misc
+# ===========================
+*.bak
+*.tmp
+*.temp
+*.old
+*.orig
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
